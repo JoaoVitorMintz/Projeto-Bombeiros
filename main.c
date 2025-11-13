@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <limits.h>
 
 #define MAX_ARESTAS 200
 
@@ -31,14 +32,78 @@ void reordenar_sequencia(int origem[], int destino[], int tempo[], int qtdAresta
 // Função que cria um vetor com o menor tempo percorrido.
 void rota_mais_rapida_dijkstra(int origem[], int destino[], int tempo[], int n, int m, int qtdArestas) {
     reordenar_sequencia(origem, destino, tempo, qtdArestas);
+    
+    int grafo[m + 1][m + 1];
+    int dist[m + 1];
+    int anterior[m + 1];
+    bool visitado[m + 1];
 
+    // Inicializa o grafo e vetores auxiliares
+    for (int i = 1; i <= m; i++) {
+        dist[i] = INT_MAX;
+        anterior[i] = -1;
+        visitado[i] = false;
+        for (int j = 1; j <= m; j++) {
+            grafo[i][j] = INT_MAX;
+        }
+    }
+
+    // Preenche o grafo com as arestas
+    for (int i = 0; i < qtdArestas; i++) {
+        grafo[origem[i]][destino[i]] = tempo[i];
+    }
+
+    int inicio = 1; // esquina inicial é sempre 1 (bombeiros)
+    dist[inicio] = 0;
+
+    // Dijkstra
+    for (int i = 1; i <= m; i++) {
+        int u = -1;
+
+        for (int j = 1; j <= m; j++) {
+            if (!visitado[j] && (u == -1 || dist[j] < dist[u])) {
+                u = j;
+            }
+        }
+
+        if (dist[u] == INT_MAX) break;
+
+        visitado[u] = true;
+
+        for (int v = 1; v <= m; v++) {
+            if (grafo[u][v] != INT_MAX && dist[u] + grafo[u][v] < dist[v]) {
+                dist[v] = dist[u] + grafo[u][v];
+                anterior[v] = u;
+            }
+        }
+    }
+
+    // Exibe o resultado apenas com a rota e tempo total
+    if (dist[n] == INT_MAX) {
+        printf("\nNao ha rota ate a esquina %d.\n", n);
+        return;
+    }
+
+    int caminho[MAX_ARESTAS];
+    int tam = 0;
+    for (int v = n; v != -1; v = anterior[v]) {
+        caminho[tam++] = v;
+    }
+
+    printf("\nRota mais rapida ate a esquina %d:\n", n);
+    for (int i = tam - 1; i >= 0; i--) {
+        printf("%d", caminho[i]);
+        if (i > 0) printf(" -> ");
+    }
+
+    printf("\nTempo total da rota: %d minutos\n", dist[n]);
 }
 
 int main(void) {
     int n; // número da esquina onde ocorre o incêndio.
     int m; // número de esquinas que constam no mapa.
     FILE *entrada; // Variável para leitura do bombeiro.txt.
-    int linha[100];
+    char linha[100];
     int origem[MAX_ARESTAS]; // Vetor que armazena o ponto de origem
     int destinos[MAX_ARESTAS]; // Vetor que armazena o ponto de chegada
     int tempo[MAX_ARESTAS]; // Vetor que armazena o tempo entre os dois pontos
@@ -61,7 +126,12 @@ int main(void) {
     while (fgets(linha, sizeof(linha), entrada) != NULL) {
         printf("%s", linha);
     }
-    printf("\nCom base nisso, esta é a sequência mais curta: ");
+
+    // Volta para o início do arquivo para reler as arestas
+    rewind(entrada);
+
+    fscanf(entrada, "%d", &n);
+    fscanf(entrada, "%d", &m);
 
     while(1) {
         fscanf(entrada, "%d", &a);
