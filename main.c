@@ -5,34 +5,8 @@
 
 #define MAX_ARESTAS 200
 
-// Função que ordena esquinas do menor tempo para o maior tempo.
-void reordenar_sequencia(int origem[], int destino[], int tempo[], int qtdArestas) {
-    for (int i = 0; i < qtdArestas - 1; i++) {
-        for (int j = i+1; j < qtdArestas; j++) {
-            if (tempo[i] > tempo[j]) {
-                // Reordenar para começar com o menor valor de tempo no vetor
-                int temp = tempo[i];
-                tempo[i] = tempo[j];
-                tempo[j] = temp;
-
-                // Reordenar origem para manter a sequência com base no tempo
-                temp = origem[i];
-                origem[i] = origem[j];
-                origem[j] = temp;
-
-                // Reordenar destino para manter a sequência com base no tempo
-                temp = destino[i];
-                destino[i] = destino[j];
-                destino[j] = temp;
-            }
-        }
-    }
-}
-
 // Função que cria um vetor com o menor tempo percorrido.
 void rota_mais_rapida_dijkstra(int origem[], int destino[], int tempo[], int n, int m, int qtdArestas) {
-    reordenar_sequencia(origem, destino, tempo, qtdArestas);
-    
     int grafo[m + 1][m + 1];
     int dist[m + 1];
     int anterior[m + 1];
